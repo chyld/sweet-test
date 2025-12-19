@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .calculator {
+      background: #1f1f1f;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .display {
+      background: #2d2d2d;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: right;
+    }
+
+    .display .previous {
+      color: #888;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .display .current {
+      color: #fff;
+      font-size: 36px;
+      font-weight: 300;
+      word-wrap: break-word;
+      min-height: 44px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .btn-number {
+      background: #3d3d3d;
+      color: #fff;
+    }
+
+    .btn-number:hover {
+      background: #4d4d4d;
+    }
+
+    .btn-operator {
+      background: #ff9500;
+      color: #fff;
+    }
+
+    .btn-operator:hover {
+      background: #ffaa33;
+    }
+
+    .btn-function {
+      background: #a5a5a5;
+      color: #000;
+    }
+
+    .btn-function:hover {
+      background: #b5b5b5;
+    }
+
+    .btn-zero {
+      grid-column: span 2;
+    }
+
+    .btn-equals {
+      background: #34c759;
+    }
+
+    .btn-equals:hover {
+      background: #45d86a;
+    }
+
+    .info {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display">
+      <div class="previous" id="previous"></div>
+      <div class="current" id="current">0</div>
+    </div>
+    <div class="buttons">
+      <button class="btn-function" onclick="clearAll()">AC</button>
+      <button class="btn-function" onclick="toggleSign()">+/-</button>
+      <button class="btn-function" onclick="percentage()">%</button>
+      <button class="btn-operator" onclick="setOperator('/')">÷</button>
+      
+      <button class="btn-number" onclick="appendNumber('7')">7</button>
+      <button class="btn-number" onclick="appendNumber('8')">8</button>
+      <button class="btn-number" onclick="appendNumber('9')">9</button>
+      <button class="btn-operator" onclick="setOperator('*')">×</button>
+      
+      <button class="btn-number" onclick="appendNumber('4')">4</button>
+      <button class="btn-number" onclick="appendNumber('5')">5</button>
+      <button class="btn-number" onclick="appendNumber('6')">6</button>
+      <button class="btn-operator" onclick="setOperator('-')">−</button>
+      
+      <button class="btn-number" onclick="appendNumber('1')">1</button>
+      <button class="btn-number" onclick="appendNumber('2')">2</button>
+      <button class="btn-number" onclick="appendNumber('3')">3</button>
+      <button class="btn-operator" onclick="setOperator('+')">+</button>
+      
+      <button class="btn-number btn-zero" onclick="appendNumber('0')">0</button>
+      <button class="btn-number" onclick="appendDecimal()">.</button>
+      <button class="btn-operator btn-equals" onclick="calculate()">=</button>
+    </div>
+    <div class="info">Deployed with Dokploy 🚀</div>
+  </div>
+
+  <script>
+    let currentValue = '0';
+    let previousValue = '';
+    let operator = null;
+    let shouldResetScreen = false;
+
+    const currentDisplay = document.getElementById('current');
+    const previousDisplay = document.getElementById('previous');
+
+    function updateDisplay() {
+      currentDisplay.textContent = currentValue;
+      if (operator && previousValue) {
+        const opSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
+        previousDisplay.textContent = `${previousValue} ${opSymbol}`;
+      } else {
+        previousDisplay.textContent = '';
+      }
+    }
+
+    function appendNumber(num) {
+      if (shouldResetScreen) {
+        currentValue = num;
+        shouldResetScreen = false;
+      } else if (currentValue === '0') {
+        currentValue = num;
+      } else if (currentValue.length < 12) {
+        currentValue += num;
+      }
+      updateDisplay();
+    }
+
+    function appendDecimal() {
+      if (shouldResetScreen) {
+        currentValue = '0.';
+        shouldResetScreen = false;
+      } else if (!currentValue.includes('.')) {
+        currentValue += '.';
+      }
+      updateDisplay();
+    }
+
+    function setOperator(op) {
+      if (operator && !shouldResetScreen) {
+        calculate();
+      }
+      previousValue = currentValue;
+      operator = op;
+      shouldResetScreen = true;
+      updateDisplay();
+    }
+
+    function calculate() {
+      if (!operator || shouldResetScreen) return;
+      
+      const prev = parseFloat(previousValue);
+      const curr = parseFloat(currentValue);
+      let result;
+
+      switch (operator) {
+        case '+': result = prev + curr; break;
+        case '-': result = prev - curr; break;
+        case '*': result = prev * curr; break;
+        case '/': result = curr === 0 ? 'Error' : prev / curr; break;
+      }
+
+      currentValue = result === 'Error' ? result : String(parseFloat(result.toFixed(10)));
+      operator = null;
+      previousValue = '';
+      shouldResetScreen = true;
+      updateDisplay();
+    }
+
+    function clearAll() {
+      currentValue = '0';
+      previousValue = '';
+      operator = null;
+      shouldResetScreen = false;
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      if (currentValue !== '0') {
+        currentValue = currentValue.startsWith('-') 
+          ? currentValue.slice(1) 
+          : '-' + currentValue;
+      }
+      updateDisplay();
+    }
+
+    function percentage() {
+      currentValue = String(parseFloat(currentValue) / 100);
+      updateDisplay();
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+      else if (e.key === '.') appendDecimal();
+      else if (e.key === '+') setOperator('+');
+      else if (e.key === '-') setOperator('-');
+      else if (e.key === '*') setOperator('*');
+      else if (e.key === '/') { e.preventDefault(); setOperator('/'); }
+      else if (e.key === 'Enter' || e.key === '=') calculate();
+      else if (e.key === 'Escape') clearAll();
+      else if (e.key === 'Backspace') {
+        currentValue = currentValue.length > 1 ? currentValue.slice(0, -1) : '0';
+        updateDisplay();
+      }
+    });
+  </script>
+</body>
+</html>
